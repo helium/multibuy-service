@@ -1,8 +1,5 @@
 use core::time;
-use std::{
-    thread,
-    time::{SystemTime, UNIX_EPOCH},
-};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use helium_proto::services::multi_buy::{
     multi_buy_client::MultiBuyClient, MultiBuyGetReqV1, MultiBuyGetResV1,
@@ -29,7 +26,6 @@ async fn main() -> Result {
     info!("connecting to {url}");
 
     let mut client = MultiBuyClient::connect(url).await?;
-    let sleep_timer = time::Duration::from_millis(1000);
 
     loop {
         let key = "test";
@@ -43,6 +39,6 @@ async fn main() -> Result {
         let a = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis();
         info!("Key={} Count={} in {}", key, res.count, a - b);
 
-        thread::sleep(sleep_timer);
+        tokio::time::sleep(time::Duration::from_millis(1000)).await;
     }
 }

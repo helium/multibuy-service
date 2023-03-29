@@ -1,15 +1,15 @@
 use clap::Parser;
-use metrics_exporter_prometheus::PrometheusBuilder;
 use core::time;
 use helium_proto::services::multi_buy::{
     multi_buy_server::{self, MultiBuyServer},
     MultiBuyGetReqV1, MultiBuyGetResV1,
 };
+use metrics_exporter_prometheus::PrometheusBuilder;
 use std::sync::{Arc, Mutex};
-use std::{collections::HashMap, path::PathBuf, thread};
+use std::{collections::HashMap, path::PathBuf};
 use tokio::task;
 use tonic::Request;
-use tracing::{info, error};
+use tracing::{error, info};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::settings::Settings;
@@ -49,13 +49,12 @@ impl multi_buy_server::MultiBuy for State {
         let key2 = key.clone();
         let cache2 = self.cache.clone();
 
-       
         metrics::increment_counter!("multibuy_service_hit");
 
         let old_count: u32 = match cache.get(&key) {
             None => {
                 task::spawn(async move {
-                    thread::sleep(time::Duration::from_millis(5000));
+                    tokio::time::sleep(time::Duration::from_millis(3000)).await;
                     let mut cache3 = cache2.lock().unwrap();
                     cache3.remove(&key2);
                     info!("cleaned {}", key2);
