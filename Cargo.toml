@@ -1,0 +1,16 @@
+[package]
+name = "multibuy-service"
+version = "0.1.0"
+edition = "2021"
+
+[[example]]
+name = "hpr_client"
+crate-type = ["bin"]
+
+[dependencies]
+tonic = "0.8.3"
+anyhow = "1.0.66"
+tokio = { version = "1.22.0", features = ["full"] }
+helium-proto = { git = "https://github.com/helium/proto", branch="macpie/multi_buy", features=["services"]}
+tracing = "0.1.37"
+tracing-subscriber = { version = "0.3.16", default-features=false, features = ["env-filter", "registry", "fmt"] }
