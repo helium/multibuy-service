@@ -14,3 +14,8 @@ tokio = { version = "1.22.0", features = ["full"] }
 helium-proto = { git = "https://github.com/helium/proto", branch="macpie/multi_buy", features=["services"]}
 tracing = "0.1.37"
 tracing-subscriber = { version = "0.3.16", default-features=false, features = ["env-filter", "registry", "fmt"] }
+metrics = "0.20.1"
+metrics-exporter-prometheus = "0.11.0"
+clap = { version = "4.0.32", features = ["derive"] }
+serde = { version = "1.0.148", features = ["derive"] }
+config = {version="0", default-features=false, features=["toml"]}

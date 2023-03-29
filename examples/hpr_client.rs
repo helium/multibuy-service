@@ -1,5 +1,8 @@
 use core::time;
-use std::{thread, time::{SystemTime, UNIX_EPOCH}};
+use std::{
+    thread,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use helium_proto::services::multi_buy::{
     multi_buy_client::MultiBuyClient, MultiBuyGetReqV1, MultiBuyGetResV1,
@@ -9,14 +12,18 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 pub type Result<T = (), E = anyhow::Error> = anyhow::Result<T, E>;
 
+include!("../src/settings.rs");
+
 #[tokio::main]
 async fn main() -> Result {
+    let settings = Settings::new(Some("settings.toml".to_string()))?;
+
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::new(&"INFO"))
+        .with(tracing_subscriber::EnvFilter::new(&settings.log))
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let port = 8080;
+    let port = settings.grpc_listen.port();
     let url = format!("http://127.0.0.1:{port}");
 
     info!("connecting to {url}");
@@ -34,7 +41,7 @@ async fn main() -> Result {
         let res: MultiBuyGetResV1 = client.get(req).await?.into_inner();
 
         let a = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis();
-        info!("Key={} Count={} in {}", key, res.count, a-b);
+        info!("Key={} Count={} in {}", key, res.count, a - b);
 
         thread::sleep(sleep_timer);
     }
