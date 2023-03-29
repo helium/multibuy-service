@@ -5,7 +5,7 @@ e.g. One Hotspot reports to HPR A, One Hotspot reports to HPR B. The 'multibuy' 
 
 Multi-Buy service fixes this non-communication by allowing HPRs to communicate within a region in order to limit the number of packets purchased by the network (based on multi-buy preference).
 
-As packet reports come in to HPR A and HPR B, they will check in with Multi-Buy service to ensure the total requested packets is not exceeded. 
+As packets come in to HPR A and HPR B, they will check in with Multi-Buy service to ensure the total requested packets is not exceeded. 
 
 ## Diagram
 
