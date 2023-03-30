@@ -2,7 +2,7 @@ use core::time;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use helium_proto::services::multi_buy::{
-    multi_buy_client::MultiBuyClient, MultiBuyGetReqV1, MultiBuyGetResV1,
+    multi_buy_client::MultiBuyClient, MultiBuyIncReqV1, MultiBuyIncResV1,
 };
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -29,12 +29,12 @@ async fn main() -> Result {
 
     loop {
         let key = "test";
-        let req = MultiBuyGetReqV1 {
+        let req = MultiBuyIncReqV1 {
             key: key.to_string(),
         };
         let b = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis();
 
-        let res: MultiBuyGetResV1 = client.get(req).await?.into_inner();
+        let res: MultiBuyIncResV1 = client.inc(req).await?.into_inner();
 
         let a = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis();
         info!("Key={} Count={} in {}", key, res.count, a - b);

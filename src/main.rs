@@ -2,7 +2,7 @@ use clap::Parser;
 use core::time;
 use helium_proto::services::multi_buy::{
     multi_buy_server::{self, MultiBuyServer},
-    MultiBuyGetReqV1, MultiBuyGetResV1,
+    MultiBuyIncReqV1, MultiBuyIncResV1,
 };
 use metrics_exporter_prometheus::PrometheusBuilder;
 use std::sync::{Arc, Mutex};
@@ -38,21 +38,22 @@ impl State {
 
 #[tonic::async_trait]
 impl multi_buy_server::MultiBuy for State {
-    async fn get(
+    async fn inc(
         &self,
-        request: Request<MultiBuyGetReqV1>,
-    ) -> Result<tonic::Response<MultiBuyGetResV1>, tonic::Status> {
-        let multibuy_req = request.into_inner();
-        let key = multibuy_req.key;
+        request: Request<MultiBuyIncReqV1>,
+    ) -> Result<tonic::Response<MultiBuyIncResV1>, tonic::Status> {
+        let multi_buy_req = request.into_inner();
+        let key = multi_buy_req.key;
         let mut cache = self.cache.lock().unwrap();
 
         let key2 = key.clone();
         let cache2 = self.cache.clone();
 
-        metrics::increment_counter!("multibuy_service_hit");
+        metrics::increment_counter!("multi_buy_service_hit");
 
         let old_count: u32 = match cache.get(&key) {
             None => {
+                // TODO: cleanup
                 task::spawn(async move {
                     tokio::time::sleep(time::Duration::from_millis(3000)).await;
                     let mut cache3 = cache2.lock().unwrap();
@@ -61,18 +62,18 @@ impl multi_buy_server::MultiBuy for State {
                 });
                 0
             }
-            Some(c) => c.clone(),
+            Some(&c) => c
         };
         let new_count = old_count + 1;
 
         cache.insert(key.clone(), new_count);
 
         let size = cache.len() as f64;
-        metrics::gauge!("multibuy_service_cache_size", size);
+        metrics::gauge!("multi_buy_service_cache_size", size);
 
         info!("Key={} Count={}", key, new_count);
 
-        Ok(tonic::Response::new(MultiBuyGetResV1 { count: new_count }))
+        Ok(tonic::Response::new(MultiBuyIncResV1 { count: new_count }))
     }
 }
 

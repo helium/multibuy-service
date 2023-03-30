@@ -418,7 +418,7 @@ checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
 [[package]]
 name = "helium-proto"
 version = "0.1.0"
-source = "git+https://github.com/helium/proto?branch=macpie/multi_buy#cc199e7edb02801fc6ddd78b3f4dbfef8208af01"
+source = "git+https://github.com/helium/proto?branch=master#8f2313dcc4cce2924d890b8b0de19cf89102888b"
 dependencies = [
  "bytes",
  "prost",
@@ -751,7 +751,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "multibuy_service"
+name = "multi_buy_service"
 version = "0.1.0"
 dependencies = [
  "anyhow",
