@@ -4,6 +4,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use helium_proto::services::multi_buy::{
     multi_buy_client::MultiBuyClient, MultiBuyIncReqV1, MultiBuyIncResV1,
 };
+use rand::distributions::{Alphanumeric, DistString};
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -26,9 +27,9 @@ async fn main() -> Result {
     info!("connecting to {url}");
 
     let mut client = MultiBuyClient::connect(url).await?;
+    let key = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
 
     loop {
-        let key = "test";
         let req = MultiBuyIncReqV1 {
             key: key.to_string(),
         };

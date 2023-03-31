@@ -5,11 +5,14 @@ use helium_proto::services::multi_buy::{
     MultiBuyIncReqV1, MultiBuyIncResV1,
 };
 use metrics_exporter_prometheus::PrometheusBuilder;
-use std::sync::{Arc, Mutex};
 use std::{collections::HashMap, path::PathBuf};
-use tokio::task;
+use std::{
+    sync::Arc,
+    time::{SystemTime, UNIX_EPOCH},
+};
+use tokio::sync::Mutex;
 use tonic::Request;
-use tracing::{error, info};
+use tracing::{debug, error, info};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::settings::Settings;
@@ -24,8 +27,14 @@ struct Cli {
     config_file: Option<PathBuf>,
 }
 
+#[derive(Debug, Copy, Clone)]
+struct CacheValue {
+    count: u32,
+    timestamp: u128,
+}
+
 struct State {
-    cache: Arc<Mutex<HashMap<String, u32>>>,
+    cache: Arc<Mutex<HashMap<String, CacheValue>>>,
 }
 
 impl State {
@@ -42,36 +51,40 @@ impl multi_buy_server::MultiBuy for State {
         &self,
         request: Request<MultiBuyIncReqV1>,
     ) -> Result<tonic::Response<MultiBuyIncResV1>, tonic::Status> {
-        let multi_buy_req = request.into_inner();
-        let key = multi_buy_req.key;
-        let mut cache = self.cache.lock().unwrap();
-
-        let key2 = key.clone();
-        let cache2 = self.cache.clone();
-
         metrics::increment_counter!("multi_buy_service_hit");
 
-        let old_count: u32 = match cache.get(&key) {
+        let multi_buy_req = request.into_inner();
+        let key = multi_buy_req.key;
+        let mut cache = self.cache.lock().await;
+
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards")
+            .as_millis();
+
+        let cached_value: CacheValue = match cache.get(&key) {
             None => {
-                // TODO: cleanup
-                task::spawn(async move {
-                    tokio::time::sleep(time::Duration::from_millis(3000)).await;
-                    let mut cache3 = cache2.lock().unwrap();
-                    cache3.remove(&key2);
-                    info!("cleaned {}", key2);
-                });
-                0
+                let size = cache.len() as f64;
+                metrics::gauge!("multi_buy_service_cache_size", size + 1.0);
+                CacheValue {
+                    count: 0,
+                    timestamp: now,
+                }
             }
-            Some(&c) => c
+            Some(&cached_value) => cached_value,
         };
-        let new_count = old_count + 1;
 
-        cache.insert(key.clone(), new_count);
+        let new_count = cached_value.count + 1;
 
-        let size = cache.len() as f64;
-        metrics::gauge!("multi_buy_service_cache_size", size);
+        cache.insert(
+            key.clone(),
+            CacheValue {
+                count: new_count,
+                timestamp: cached_value.timestamp,
+            },
+        );
 
-        info!("Key={} Count={}", key, new_count);
+        debug!("Key={} Count={}", key, new_count);
 
         Ok(tonic::Response::new(MultiBuyIncResV1 { count: new_count }))
     }
@@ -99,6 +112,7 @@ async fn main() -> Result {
     info!("Server started @ {:?}", settings.grpc_listen);
 
     let grpc_state = State::new()?;
+    let grpc_state_cache = grpc_state.cache.clone();
 
     let grpc_thread = tokio::spawn(async move {
         tonic::transport::Server::builder()
@@ -106,6 +120,28 @@ async fn main() -> Result {
             .serve(settings.grpc_listen)
             .await
             .unwrap();
+    });
+
+    tokio::spawn(async move {
+        loop {
+            // Sleep 30min
+            let duration = time::Duration::from_secs(5);
+
+            tokio::time::sleep(duration).await;
+
+            let now = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("Time went backwards")
+                .as_millis();
+
+            let mut cache = grpc_state_cache.lock().await;
+            let size_before = cache.len() as f64;
+
+            cache.retain(|_, v| v.timestamp > now - duration.as_millis());
+
+            let size_after = cache.len() as f64;
+            info!("cleaned {}", size_before - size_after);
+        }
     });
 
     let _ = tokio::try_join!(grpc_thread);

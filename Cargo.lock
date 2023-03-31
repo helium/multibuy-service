@@ -760,6 +760,7 @@ dependencies = [
  "helium-proto",
  "metrics",
  "metrics-exporter-prometheus",
+ "rand",
  "serde",
  "tokio",
  "tonic",

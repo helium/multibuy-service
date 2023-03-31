@@ -19,3 +19,4 @@ metrics-exporter-prometheus = "0.11.0"
 clap = { version = "4.0.32", features = ["derive"] }
 serde = { version = "1.0.148", features = ["derive"] }
 config = {version="0", default-features=false, features=["toml"]}
+rand = "0.8.5"
