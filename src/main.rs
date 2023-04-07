@@ -12,7 +12,7 @@ use std::{
 };
 use tokio::sync::Mutex;
 use tonic::Request;
-use tracing::{debug, error, info};
+use tracing::{error, info};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::settings::Settings;
