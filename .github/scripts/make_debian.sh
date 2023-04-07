@@ -67,7 +67,7 @@ run_fpm()
     mkdir -p /opt/multi_buy_service/etc
     touch /opt/multi_buy_service/etc/settings.toml
 
-    fpm -n downlink-service \
+    fpm -n multi-buy-service \
         -v "${VERSION}" \
         -s dir \
         -t deb \
