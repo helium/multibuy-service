@@ -125,7 +125,7 @@ async fn main() -> Result {
     tokio::spawn(async move {
         loop {
             // Sleep 30min
-            let duration = time::Duration::from_secs(60*30);
+            let duration = time::Duration::from_secs(60 * 30);
 
             tokio::time::sleep(duration).await;
 
