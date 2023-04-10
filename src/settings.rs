@@ -11,7 +11,7 @@ pub struct Settings {
     /// Listen address for grpc requests. Default "0.0.0.0:6080"
     #[serde(default = "default_grpc_listen_addr")]
     pub grpc_listen: SocketAddr,
-    /// Listen address for metrics requests. Default "0.0.0.0:9000"
+    /// Listen address for metrics requests. Default "0.0.0.0:19011"
     #[serde(default = "default_metrics_listen_addr")]
     pub metrics_listen: SocketAddr,
 }
@@ -27,7 +27,7 @@ pub fn default_grpc_listen_addr() -> SocketAddr {
 }
 
 pub fn default_metrics_listen_addr() -> SocketAddr {
-    "0.0.0.0:9000".parse().expect("invalid default socket addr")
+    "0.0.0.0:19011".parse().expect("invalid default socket addr")
 }
 
 impl Settings {
