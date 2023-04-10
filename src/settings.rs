@@ -8,7 +8,7 @@ pub struct Settings {
     /// RUST_LOG compatible settings string. Default to INFO
     #[serde(default = "default_log")]
     pub log: String,
-    /// Listen address for grpc requests. Default "0.0.0.0:50051"
+    /// Listen address for grpc requests. Default "0.0.0.0:6080"
     #[serde(default = "default_grpc_listen_addr")]
     pub grpc_listen: SocketAddr,
     /// Listen address for metrics requests. Default "0.0.0.0:9000"
@@ -21,7 +21,7 @@ pub fn default_log() -> String {
 }
 
 pub fn default_grpc_listen_addr() -> SocketAddr {
-    "0.0.0.0:50051"
+    "0.0.0.0:6080"
         .parse()
         .expect("invalid default socket addr")
 }
