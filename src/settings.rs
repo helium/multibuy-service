@@ -21,13 +21,13 @@ pub fn default_log() -> String {
 }
 
 pub fn default_grpc_listen_addr() -> SocketAddr {
-    "0.0.0.0:6080"
-        .parse()
-        .expect("invalid default socket addr")
+    "0.0.0.0:6080".parse().expect("invalid default socket addr")
 }
 
 pub fn default_metrics_listen_addr() -> SocketAddr {
-    "0.0.0.0:19011".parse().expect("invalid default socket addr")
+    "0.0.0.0:19011"
+        .parse()
+        .expect("invalid default socket addr")
 }
 
 impl Settings {
