@@ -176,4 +176,4 @@ jobs:
           file: Dockerfile
           target: runner
           push: true
-          tags: ghcr.io/${{ github.repository }}/multi_buy_service:${{ github.ref_name }}
+          tags: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
